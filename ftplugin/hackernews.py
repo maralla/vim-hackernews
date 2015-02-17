@@ -32,6 +32,8 @@ else:
 API_URL = "http://node-hnapi.herokuapp.com"
 MARKDOWN_URL = "http://fuckyeahmarkdown.com/go/?read=1&u="
 
+current_page = 1
+
 
 def bwrite(s):
     b = vim.current.buffer
@@ -68,17 +70,20 @@ def main():
     vim.command("edit .hackernews")
     vim.command("setlocal noswapfile")
     vim.command("setlocal buftype=nofile")
+    vim.command("setlocal nonu")
 
     bwrite("┌───┐")
     bwrite("│ Y │ Hacker News (news.ycombinator.com)")
     bwrite("└───┘")
     bwrite("")
 
+    query_page(current_page)
+
+
+def query_page(page=1):
     try:
-        news1 = json.loads(urlopen(API_URL+"/news", timeout=5)
-                           .read().decode('utf-8'))
-        news2 = json.loads(urlopen(API_URL+"/news2", timeout=5)
-                           .read().decode('utf-8'))
+        news = json.loads(urlopen(API_URL+"/news" + "?page={}".format(page),
+                                  timeout=5).read().decode('utf-8'))
     except HTTPError:
         print("HackerNews.vim Error: %s" % str(sys.exc_info()[1].reason))
         return
@@ -86,7 +91,8 @@ def main():
         print("HackerNews.vim Error: HTTP Request Timeout")
         return
 
-    for i, item in enumerate(news1+news2):
+    for i, item in enumerate(news):
+        i = 30 * (page - 1) + i
         if 'title' not in item:
             continue
         if 'domain' in item:
@@ -108,6 +114,27 @@ def main():
             line %= (" "*4, item['time_ago'], item['id'])
             bwrite(line)
         bwrite("")
+
+
+def next():
+    global current_page
+    current_page += 1
+
+    vim.current.buffer[:] = []
+
+    query_page(current_page)
+
+
+def prev():
+    global current_page
+    current_page -= 1
+
+    if current_page <= 0:
+        return
+
+    vim.current.buffer[:] = []
+
+    query_page(current_page)
 
 
 def link(external=False):

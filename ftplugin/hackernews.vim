@@ -40,6 +40,8 @@ execute "Python hackernews.main()"
 
 
 noremap <buffer> o :Python hackernews.link()<cr>
+noremap <buffer> n :python hackernews.next()<cr>
+noremap <buffer> p :python hackernews.prev()<cr>
 noremap <buffer> O :Python hackernews.link(external=True)<cr>
 noremap <buffer> gx :Python hackernews.link(external=True)<cr>
 noremap <buffer> u :Python hackernews.save_pos()<cr>
